@@ -1,0 +1,60 @@
+from aiogram importter, types
+from aiogram.filters import Command
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+
+router = Router()
+
+# Команда /menu с reply-кнопками
+@router.message(Command("menu"))
+async def cmd_menu(message: types.Message):
+    kb = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="Показать статистику")],
+            [KeyboardButton(text="О боте")]
+        ],
+        resize_keyboard=True
+# Сообщение "Показать статистику" → reply-кнопки по категориям
+@router.message(lambda m: m.text == "Показать статистику")
+async def show_categories(message: types.Message):
+    kb = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="⚡ Электроэнергетика")],
+            [KeyboardButton(text="🔥 Теплоснабжение")],
+            [KeyboardButton(text="🛢 Нефть"), KeyboardButton(text="💨 Газ")],
+            [KeyboardButton(text="🪨 Уголь"), KeyboardButton(text="📋 Сводка по ТЭК")],
+        ],
+        resize_keyboard=True,
+        input_field_placeholder="Выберите направление ТЭК",
+    )
+    await message.answer("📊 Показатели ТЭК — выберите категорию:", reply_markup=kb)
+    )
+    await message.answer("Выберите действие:", reply_markup=kb)
+
+# Сообщение "Показать статистику" → inline-кнопки
+@router.message(lambda m: m.text == "Показать статистику")
+async def show_stats(message: types.Message):
+    inline_kb = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Нефть", callback_data="stat_oil")],
+            [InlineKeyboardButton(text="Газ", callback_data="stat_gas")]
+        ]
+    )
+    await message.answer("Выберите направление:", reply_markup=inline_kb)
+
+@router.message(lambda m: m.text == "О боте")
+async def about_from_menu(message: types.Message):
+    await message.answer("Этот бот создан для отображения статистики в сфере ТЭК.\nРазработка: Roman MPEI 🚀")
+
+# Ответы на inline-кнопки
+@router.callback_query(lambda c: c.data.startswith("stat_"))
+async def process_stat_callback(callback: types.CallbackQuery):
+    data = callback.data
+    if data == "stat_oil":
+        text = "📊 Статистика по нефти: [пока заглушка]"
+    elif data == "stat_gas":
+        text = "📊 Статистика по газу: [пока заглушка]"
+    else:
+        text = "Неизвестный выбор"
+    
+    await callback.message.answer(text)
+    await callback.answ
