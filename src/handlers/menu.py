@@ -2,8 +2,8 @@ from aiogram import Router, types
 from aiogram.filters import Command
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from db import SessionLocal, Statistic
-
+from db import SessionLocal, Statistic, UserAction
+from datetime import datetime
 
 router = Router()
 
@@ -43,9 +43,20 @@ async def show_categories(message: types.Message):
     "🪨 Уголь",
     "📋 Сводка по ТЭК"
 ])
-
 async def category_selected(message: types.Message):
     category = message.text
+
+    # ✅ логирование выбора категории
+    db = SessionLocal()
+    db.add(UserAction(
+        user_id=message.from_user.id,
+        action="select_category",
+        category=category,
+        timestamp=datetime.utcnow()
+    ))
+    db.commit()
+    db.close()
+
     inline_kb = InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -60,6 +71,7 @@ async def category_selected(message: types.Message):
     )
     await message.answer(f"📅 Выберите год для категории {category}:", reply_markup=inline_kb)
 
+# Обработка выбора года → отображение данных
 @router.callback_query(lambda c: any(year in c.data for year in ["2021", "2022", "2023", "2024"]))
 async def year_selected(callback: types.CallbackQuery):
     raw_data = callback.data
@@ -69,9 +81,19 @@ async def year_selected(callback: types.CallbackQuery):
             break
     category = raw_data.replace(f"_{selected_year}", "")
 
-    session = SessionLocal()
-    result = session.query(Statistic).filter_by(category=category, year=selected_year).first()
-    session.close()
+    # ✅ логирование выбора года
+    db = SessionLocal()
+    db.add(UserAction(
+        user_id=callback.from_user.id,
+        action="select_year",
+        category=category,
+        year=selected_year,
+        timestamp=datetime.utcnow()
+    ))
+    db.commit()
+
+    result = db.query(Statistic).filter_by(category=category, year=selected_year).first()
+    db.close()
 
     if result:
         text = f"📊 Данные по {category} за {selected_year} год:\n{result.text}"
@@ -81,13 +103,11 @@ async def year_selected(callback: types.CallbackQuery):
     await callback.message.answer(text)
     await callback.answer()
 
-
-
 # Ответ на "О боте"
 @router.message(lambda m: m.text == "О боте")
 async def about_from_menu(message: types.Message):
     await message.answer(
-        "📌 Бот статистика ТЭК создан для всех, кому нужно иметь под рукой основную статистическую информацию" 
+        "📌 Бот статистика ТЭК создан для всех, кому нужно иметь под рукой основную статистическую информацию"
         "о ключевых направлениях ТЭК.\n\n"
         "📈 Данные могут быть расширены или можно разработать индивидуальный бот.\n\n"
         "🔒 Бот не собирает персональные данные.\n"

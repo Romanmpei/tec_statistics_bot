@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Статистика ТЭК</title>
+</head>
+<body>
+    <h1>📊 Статистика ТЭК</h1>
+    {% for s in stats %}
+        <div>
+            <h2>{{ s.category }} — {{ s.year }}</h2>
+            <p>{{ s.text|safe }}</p>
+            <hr>
+        </div>
+    {% endfor %}
+</body>
+</html>

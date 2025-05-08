@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Аналитика Telegram-бота</title>
+</head>
+<body>
+    <h1>📊 Аналитика использования бота</h1>
+    <p><strong>Всего действий:</strong> {{ total_actions }}</p>
+    <p><strong>Уникальных пользователей:</strong> {{ unique_users }}</p>
+
+    <h2>Категории по популярности</h2>
+    <table border="1" cellpadding="6">
+        <tr><th>Категория</th><th>Количество</th></tr>
+        {% for category, count in category_counts %}
+        <tr><td>{{ category }}</td><td>{{ count }}</td></tr>
+        {% endfor %}
+    </table>
+
+    <h2>Выбор годов</h2>
+    <table border="1" cellpadding="6">
+        <tr><th>Год</th><th>Количество</th></tr>
+        {% for year, count in year_counts %}
+        <tr><td>{{ year }}</td><td>{{ count }}</td></tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

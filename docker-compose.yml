@@ -6,5 +6,7 @@ services:
     container_name: tecstat_bot
     env_file:
       - .env
+    volumes:
+      - ./src/statistics.db:/app/src/statistics.db
     restart: always
 
